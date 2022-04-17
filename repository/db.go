@@ -1,14 +1,18 @@
-package dbConnect
+package repository
 
 import (
 	"fmt"
+
+	"github.com/onurdogustemel/final-project/model"
+
 	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func CreatePostgresConnection() (*gorm.DB, error) {
+//DB connection to Database
+func DB() *gorm.DB {
 
 	database := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
 		os.Getenv("DB_HOSTNAME"),
@@ -20,17 +24,10 @@ func CreatePostgresConnection() (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(database), &gorm.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("cannot open database: %v", err)
+		return nil
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
+	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Order{})
+	return db
 
-	if err := sqlDB.Ping(); err != nil {
-		return nil, err
-	}
-
-	return db, err
 }
